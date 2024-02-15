@@ -67,8 +67,6 @@ mongoose.connect(DB, {
 //     mongoose.connection.close();
 //   })
 
-
-DB.Products.createIndex({ name: "text", desc: "text" });
 app.use('/',router);
 
 app.listen(port, () => {

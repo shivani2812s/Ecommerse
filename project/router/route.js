@@ -97,15 +97,34 @@ const mailOptions = {
   });
 });
 
-router.post('/search', async (req, res) => {
-  const keyword = req.body.keyword;
-  console.log(keyword);
+router.get('/search', async (req, res) => {
   try {
-    const products = await Products.find({ $text: { $search: keyword } });
-    res.render('products', { products });
+      const { name } = req.query;
+      const query = {};
+      if (name) {
+          query.name = { $regex: new RegExp(name, 'i') }; // Case-insensitive search for name
+      }
+      await Products.find(query).exec()
+      .then(docs=>{
+          const response={
+              count: docs.length,
+              products:docs.map(
+                  doc=>{
+                      return{
+                          id:doc._id,
+                          name:doc.name,
+                          price:doc.price,
+                          image:doc.image,
+                          desc:doc.desc,
+                      }
+                  }
+              )
+          }
+          res.json(response);
+      });
   } catch (error) {
-    console.error(error);
-    res.status(500).send("Internal Server Error");
+      console.error('Error searching products:', error);
+      res.status(500).json({ message: 'Internal server error' });
   }
 });
 
